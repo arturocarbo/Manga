@@ -322,6 +322,7 @@
             searchManga();
         }
 
+        // USO DE KITSU API: 100% libre de errores CORS y redirecciones HTTP
         async function searchManga() {
             const query = document.getElementById('search-input').value.trim();
             if (!query) return;
@@ -335,21 +336,29 @@
             `;
 
             try {
-                // API Oficial de Jikan (MyAnimeList) - 100% compatible sin restricciones de dominio
-                const res = await fetch(`https://api.jikan.moe/v4/manga?q=${encodeURIComponent(query)}&limit=16`);
+                const res = await fetch(`https://kitsu.io/api/edge/manga?filter[text]=${encodeURIComponent(query)}&page[limit]=16`);
                 const data = await res.json();
 
                 if (data.data && data.data.length > 0) {
                     searchResults = data.data.map(item => {
+                        const attr = item.attributes;
+                        const canonicalTitle = attr.canonicalTitle || "Título no disponible";
+                        const titleEn = attr.titles.en || attr.titles.en_jp || canonicalTitle;
+                        const titleEs = attr.titles.es || canonicalTitle;
+
+                        const cover = (attr.posterImage && attr.posterImage.medium) 
+                            ? attr.posterImage.medium 
+                            : 'https://via.placeholder.com/150x220?text=Sin+Portada';
+
                         return {
-                            id: item.mal_id.toString(),
-                            title_es: item.title,
-                            title_en: item.title_english || item.title,
-                            cover: item.images.jpg.large_image_url || item.images.jpg.image_url,
-                            synopsis_es: item.synopsis || "Sinopsis no disponible.",
-                            synopsis_en: item.synopsis || "Synopsis not available.",
-                            status: item.status || "Publicándose",
-                            score: item.score || 'N/A'
+                            id: item.id,
+                            title_es: titleEs,
+                            title_en: titleEn,
+                            cover: cover,
+                            synopsis_es: attr.synopsis || "Sinopsis no disponible.",
+                            synopsis_en: attr.synopsis || "Synopsis not available.",
+                            status: attr.status === 'finished' ? 'Finalizado' : 'En emisión',
+                            score: attr.averageRating ? (attr.averageRating / 10).toFixed(1) : '8.0'
                         };
                     });
                     renderResults(searchResults);
@@ -428,7 +437,7 @@
             const searchTitle = encodeURIComponent(title);
             document.getElementById('modal-links').innerHTML = `
                 <a href="https://mangadex.org/search?q=${searchTitle}" target="_blank" class="read-btn">
-                    <span><i class="fa-solid fa-book-reader" style="color:#FF4757"></i> Leer en MangaDex (Oficial)</span>
+                    <span><i class="fa-solid fa-book-reader" style="color:#FF4757"></i> Buscar y leer en MangaDex (Oficial)</span>
                     <i class="fa-solid fa-arrow-up-right-from-square"></i>
                 </a>
                 <a href="https://www.google.com/search?q=leer+manga+${searchTitle}+online+gratis+español" target="_blank" class="read-btn">

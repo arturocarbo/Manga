@@ -330,36 +330,26 @@
             container.innerHTML = `
                 <div class="status-box">
                     <i class="fa-solid fa-spinner fa-spin"></i>
-                    <p>Buscando en la base de datos global de MangaDex...</p>
+                    <p>Buscando mangas en vivo por internet...</p>
                 </div>
             `;
 
             try {
-                // Consulta directa a la API de MangaDex (funciona perfecto en GitHub Pages)
-                const res = await fetch(`https://api.mangadex.org/manga?title=${encodeURIComponent(query)}&limit=16&includes[]=cover_art`);
+                // API Oficial de Jikan (MyAnimeList) - 100% compatible sin restricciones de dominio
+                const res = await fetch(`https://api.jikan.moe/v4/manga?q=${encodeURIComponent(query)}&limit=16`);
                 const data = await res.json();
 
                 if (data.data && data.data.length > 0) {
                     searchResults = data.data.map(item => {
-                        const attr = item.attributes;
-                        const coverRel = item.relationships.find(r => r.type === 'cover_art');
-                        const fileName = coverRel ? coverRel.attributes.fileName : '';
-                        const coverUrl = fileName 
-                            ? `https://uploads.mangadex.org/covers/${item.id}/${fileName}.256.jpg`
-                            : 'https://via.placeholder.com/150x220?text=Sin+Portada';
-
-                        const titleEs = attr.title.es || (attr.altTitles.find(t => t.es) || {}).es || attr.title.en || Object.values(attr.title)[0];
-                        const titleEn = attr.title.en || (attr.altTitles.find(t => t.en) || {}).en || Object.values(attr.title)[0];
-
                         return {
-                            id: item.id,
-                            title_es: titleEs,
-                            title_en: titleEn,
-                            cover: coverUrl,
-                            synopsis_es: attr.description.es || attr.description.en || "Sinopsis no disponible.",
-                            synopsis_en: attr.description.en || "Synopsis not available.",
-                            status: attr.status || "Desconocido",
-                            mangadex_url: `https://mangadex.org/title/${item.id}`
+                            id: item.mal_id.toString(),
+                            title_es: item.title,
+                            title_en: item.title_english || item.title,
+                            cover: item.images.jpg.large_image_url || item.images.jpg.image_url,
+                            synopsis_es: item.synopsis || "Sinopsis no disponible.",
+                            synopsis_en: item.synopsis || "Synopsis not available.",
+                            status: item.status || "Publicándose",
+                            score: item.score || 'N/A'
                         };
                     });
                     renderResults(searchResults);
@@ -398,7 +388,7 @@
                         <div class="card-content">
                             <div>
                                 <div class="manga-title">${title}</div>
-                                <div class="manga-status">Estado: ${manga.status}</div>
+                                <div class="manga-status">⭐ ${manga.score} • ${manga.status}</div>
                             </div>
                             <button class="btn-add ${isSaved ? 'saved' : ''}" onclick="event.stopPropagation(); toggleSave('${manga.id}')">
                                 <i class="fa-solid ${isSaved ? 'fa-heart' : 'fa-plus'}"></i>
@@ -427,7 +417,7 @@
             
             document.getElementById('modal-img').src = manga.cover;
             document.getElementById('modal-title').innerText = title;
-            document.getElementById('modal-meta').innerText = `Estado: ${manga.status}`;
+            document.getElementById('modal-meta').innerText = `⭐ ${manga.score} | Estado: ${manga.status}`;
             document.getElementById('modal-synopsis').innerText = synopsis;
 
             const isSaved = myLibrary.some(item => item.id === manga.id);
@@ -437,8 +427,8 @@
 
             const searchTitle = encodeURIComponent(title);
             document.getElementById('modal-links').innerHTML = `
-                <a href="${manga.mangadex_url}" target="_blank" class="read-btn">
-                    <span><i class="fa-solid fa-book-reader" style="color:#FF4757"></i> Leer en MangaDex (Oficial Gratis)</span>
+                <a href="https://mangadex.org/search?q=${searchTitle}" target="_blank" class="read-btn">
+                    <span><i class="fa-solid fa-book-reader" style="color:#FF4757"></i> Leer en MangaDex (Oficial)</span>
                     <i class="fa-solid fa-arrow-up-right-from-square"></i>
                 </a>
                 <a href="https://www.google.com/search?q=leer+manga+${searchTitle}+online+gratis+español" target="_blank" class="read-btn">

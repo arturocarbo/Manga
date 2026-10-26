@@ -1,0 +1,516 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Manga Fio - Tu Biblioteca de Manga</title>
+    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;500;600;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    
+    <style>
+        :root {
+            --primary: #FF4757;
+            --primary-hover: #FF6B81;
+            --bg-body: #F4F6F9;
+            --bg-card: #FFFFFF;
+            --text-main: #2F3542;
+            --text-muted: #747D8C;
+            --border-color: #E4E7EB;
+            --shadow: 0 8px 24px rgba(149, 157, 165, 0.12);
+            --radius: 16px;
+        }
+
+        * {
+            box-sizing: border-box;
+            margin: 0; padding: 0;
+            font-family: 'Poppins', sans-serif;
+            -webkit-tap-highlight-color: transparent;
+        }
+
+        body {
+            background-color: var(--bg-body);
+            color: var(--text-main);
+            padding: 16px;
+            max-width: 900px;
+            margin: 0 auto;
+        }
+
+        header {
+            background: var(--bg-card);
+            padding: 18px 24px;
+            border-radius: var(--radius);
+            box-shadow: var(--shadow);
+            margin-bottom: 20px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            flex-wrap: wrap;
+            gap: 12px;
+        }
+
+        .brand { display: flex; align-items: center; gap: 12px; }
+        .brand-icon {
+            width: 44px; height: 44px;
+            background: linear-gradient(135deg, #FF4757, #FF6B81);
+            color: white; border-radius: 12px;
+            display: flex; align-items: center; justify-content: center;
+            font-size: 1.3rem; box-shadow: 0 4px 12px rgba(255, 71, 87, 0.3);
+        }
+
+        .brand h1 { font-size: 1.3rem; font-weight: 700; color: var(--text-main); }
+        .brand p { font-size: 0.8rem; color: var(--text-muted); }
+
+        .lang-toggle {
+            display: flex; background: #F1F2F6;
+            padding: 4px; border-radius: 30px; gap: 4px;
+        }
+
+        .lang-btn {
+            border: none; background: transparent;
+            padding: 6px 14px; border-radius: 20px;
+            font-size: 0.82rem; font-weight: 600; cursor: pointer;
+            color: var(--text-muted); transition: all 0.2s ease;
+        }
+
+        .lang-btn.active {
+            background: var(--primary); color: white;
+            box-shadow: 0 2px 8px rgba(255, 71, 87, 0.3);
+        }
+
+        .tabs { display: flex; gap: 10px; margin-bottom: 20px; }
+        .tab-btn {
+            flex: 1; padding: 12px; border: none;
+            background: var(--bg-card); border-radius: 12px;
+            font-weight: 600; font-size: 0.95rem; color: var(--text-muted);
+            cursor: pointer; display: flex; align-items: center; justify-content: center;
+            gap: 8px; box-shadow: var(--shadow);
+        }
+
+        .tab-btn.active { background: var(--primary); color: white; }
+        .badge {
+            background: rgba(255, 255, 255, 0.3); color: white;
+            padding: 2px 8px; border-radius: 12px; font-size: 0.75rem;
+        }
+
+        .search-box {
+            background: var(--bg-card); padding: 16px;
+            border-radius: var(--radius); box-shadow: var(--shadow); margin-bottom: 24px;
+        }
+
+        .input-group { display: flex; gap: 10px; }
+        .input-group input {
+            flex: 1; padding: 12px 18px; border: 2px solid var(--border-color);
+            border-radius: 12px; outline: none; font-size: 0.95rem;
+        }
+
+        .input-group button {
+            background: var(--primary); color: white; border: none;
+            padding: 12px 22px; border-radius: 12px; font-weight: 600; cursor: pointer;
+        }
+
+        .suggestions {
+            display: flex; gap: 8px; margin-top: 12px;
+            flex-wrap: wrap; align-items: center;
+        }
+
+        .chip {
+            background: #F1F2F6; border: none; padding: 4px 12px;
+            border-radius: 16px; font-size: 0.8rem; color: var(--text-main); cursor: pointer;
+        }
+
+        .manga-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(160px, 1fr));
+            gap: 16px;
+        }
+
+        .manga-card {
+            background: var(--bg-card); border-radius: var(--radius);
+            overflow: hidden; box-shadow: var(--shadow);
+            display: flex; flex-direction: column; cursor: pointer;
+            transition: transform 0.2s ease;
+        }
+
+        .manga-card:hover { transform: translateY(-4px); }
+
+        .cover-wrapper {
+            position: relative; width: 100%; padding-top: 145%; background: #E4E7EB;
+        }
+
+        .cover-wrapper img {
+            position: absolute; top: 0; left: 0;
+            width: 100%; height: 100%; object-fit: cover;
+        }
+
+        .card-content {
+            padding: 12px; display: flex; flex-direction: column;
+            flex: 1; justify-content: space-between;
+        }
+
+        .manga-title {
+            font-size: 0.9rem; font-weight: 600; line-height: 1.3; margin-bottom: 6px;
+            display: -webkit-box; -webkit-line-clamp: 2; -webkit-box-orient: vertical; overflow: hidden;
+        }
+
+        .manga-status { font-size: 0.75rem; color: var(--text-muted); margin-bottom: 10px; }
+
+        .btn-add {
+            width: 100%; padding: 8px; border: none; border-radius: 8px;
+            background: #F1F2F6; color: var(--text-main); font-size: 0.8rem;
+            font-weight: 600; cursor: pointer; display: flex; align-items: center;
+            justify-content: center; gap: 6px;
+        }
+
+        .btn-add.saved { background: #FFEAA7; color: #D63031; }
+
+        .modal-overlay {
+            position: fixed; top: 0; left: 0; width: 100%; height: 100%;
+            background: rgba(0, 0, 0, 0.6); backdrop-filter: blur(4px);
+            display: none; justify-content: center; align-items: center;
+            z-index: 1000; padding: 16px;
+        }
+
+        .modal-card {
+            background: var(--bg-card); border-radius: var(--radius);
+            max-width: 600px; width: 100%; max-height: 90vh;
+            overflow-y: auto; position: relative;
+        }
+
+        .close-modal {
+            position: absolute; top: 14px; right: 14px;
+            background: rgba(0, 0, 0, 0.5); color: white; border: none;
+            width: 32px; height: 32px; border-radius: 50%; cursor: pointer; z-index: 10;
+        }
+
+        .modal-header-bg {
+            display: flex; gap: 16px; padding: 20px;
+            background: #2F3542; color: white;
+        }
+
+        .modal-cover { width: 110px; height: 160px; object-fit: cover; border-radius: 8px; }
+        .modal-header-info { flex: 1; display: flex; flex-direction: column; justify-content: center; }
+        .modal-title { font-size: 1.2rem; font-weight: 700; margin-bottom: 6px; }
+        .modal-meta { font-size: 0.82rem; color: #A4B0BE; margin-bottom: 12px; }
+        .modal-body { padding: 20px; }
+        .synopsis { font-size: 0.88rem; color: var(--text-muted); line-height: 1.5; margin-bottom: 20px; }
+
+        .read-links { display: flex; flex-direction: column; gap: 8px; }
+        .read-btn {
+            display: flex; align-items: center; justify-content: space-between;
+            padding: 12px 16px; background: #F1F2F6; border-radius: 10px;
+            text-decoration: none; color: var(--text-main); font-weight: 600; font-size: 0.88rem;
+        }
+
+        .status-box {
+            text-align: center; padding: 40px 20px;
+            background: var(--bg-card); border-radius: var(--radius);
+        }
+
+        .status-box i { font-size: 2.5rem; color: var(--primary); margin-bottom: 12px; }
+
+        @media (max-width: 480px) {
+            .manga-grid { grid-template-columns: repeat(2, 1fr); gap: 12px; }
+        }
+    </style>
+</head>
+<body>
+
+    <header>
+        <div class="brand">
+            <div class="brand-icon"><i class="fa-solid fa-book-open"></i></div>
+            <div>
+                <h1>Manga Fio</h1>
+                <p id="sub-title">Tu Biblioteca Digital</p>
+            </div>
+        </div>
+        
+        <div class="lang-toggle">
+            <button class="lang-btn active" id="btn-es" onclick="setLanguage('es')">ES 🇲🇽</button>
+            <button class="lang-btn" id="btn-en" onclick="setLanguage('en')">EN 🇺🇸</button>
+        </div>
+    </header>
+
+    <div class="tabs">
+        <button class="tab-btn active" id="tab-explore" onclick="switchTab('explore')">
+            <i class="fa-compass fa-regular"></i> <span id="lbl-explore">Explorar</span>
+        </button>
+        <button class="tab-btn" id="tab-library" onclick="switchTab('library')">
+            <i class="fa-bookmark fa-regular"></i> <span id="lbl-library">Mi Biblioteca</span>
+            <span class="badge" id="library-count">0</span>
+        </button>
+    </div>
+
+    <div id="view-explore">
+        <div class="search-box">
+            <div class="input-group">
+                <input type="text" id="search-input" placeholder="Buscar manga en línea..." onkeypress="if(event.key==='Enter') searchManga()">
+                <button onclick="searchManga()"><i class="fa-solid fa-magnifying-glass"></i></button>
+            </div>
+            <div class="suggestions">
+                <span>Sugeridos:</span>
+                <button class="chip" onclick="quickSearch('Demon Slayer')">Demon Slayer</button>
+                <button class="chip" onclick="quickSearch('Spy x Family')">Spy x Family</button>
+                <button class="chip" onclick="quickSearch('One Piece')">One Piece</button>
+                <button class="chip" onclick="quickSearch('Jujutsu Kaisen')">Jujutsu Kaisen</button>
+                <button class="chip" onclick="quickSearch('Naruto')">Naruto</button>
+            </div>
+        </div>
+
+        <div id="results-container"></div>
+    </div>
+
+    <div id="view-library" style="display: none;">
+        <div id="library-container"></div>
+    </div>
+
+    <div class="modal-overlay" id="modal-detail" onclick="closeModal(event)">
+        <div class="modal-card" onclick="event.stopPropagation()">
+            <button class="close-modal" onclick="closeModalDirect()"><i class="fa-solid fa-xmark"></i></button>
+            <div class="modal-header-bg">
+                <img id="modal-img" src="" class="modal-cover" alt="Cover">
+                <div class="modal-header-info">
+                    <h2 class="modal-title" id="modal-title">---</h2>
+                    <div class="modal-meta" id="modal-meta">---</div>
+                    <button class="btn-add" id="modal-save-btn" onclick="toggleSaveCurrent()">
+                        <i class="fa-regular fa-bookmark"></i> <span id="modal-save-lbl">Guardar en lista</span>
+                    </button>
+                </div>
+            </div>
+            <div class="modal-body">
+                <div class="section-title">Sinopsis</div>
+                <div class="synopsis" id="modal-synopsis">---</div>
+
+                <div class="section-title">Opciones para leer en línea gratis:</div>
+                <div class="read-links" id="modal-links"></div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        let currentLang = 'es';
+        let currentTab = 'explore';
+        let searchResults = [];
+        let selectedManga = null;
+        let myLibrary = JSON.parse(localStorage.getItem('manga_fio_library') || '[]');
+
+        document.addEventListener('DOMContentLoaded', () => {
+            updateLibraryCount();
+            quickSearch('Demon Slayer');
+        });
+
+        function setLanguage(lang) {
+            currentLang = lang;
+            document.getElementById('btn-es').classList.toggle('active', lang === 'es');
+            document.getElementById('btn-en').classList.toggle('active', lang === 'en');
+            renderResults(searchResults);
+            if (currentTab === 'library') renderLibrary();
+            if (selectedManga) fillModalData(selectedManga);
+        }
+
+        function switchTab(tab) {
+            currentTab = tab;
+            document.getElementById('tab-explore').classList.toggle('active', tab === 'explore');
+            document.getElementById('tab-library').classList.toggle('active', tab === 'library');
+            document.getElementById('view-explore').style.display = tab === 'explore' ? 'block' : 'none';
+            document.getElementById('view-library').style.display = tab === 'library' ? 'block' : 'none';
+
+            if (tab === 'library') renderLibrary();
+        }
+
+        function quickSearch(term) {
+            document.getElementById('search-input').value = term;
+            searchManga();
+        }
+
+        async function searchManga() {
+            const query = document.getElementById('search-input').value.trim();
+            if (!query) return;
+
+            const container = document.getElementById('results-container');
+            container.innerHTML = `
+                <div class="status-box">
+                    <i class="fa-solid fa-spinner fa-spin"></i>
+                    <p>Buscando en la base de datos global de MangaDex...</p>
+                </div>
+            `;
+
+            try {
+                // Consulta directa a la API de MangaDex (funciona perfecto en GitHub Pages)
+                const res = await fetch(`https://api.mangadex.org/manga?title=${encodeURIComponent(query)}&limit=16&includes[]=cover_art`);
+                const data = await res.json();
+
+                if (data.data && data.data.length > 0) {
+                    searchResults = data.data.map(item => {
+                        const attr = item.attributes;
+                        const coverRel = item.relationships.find(r => r.type === 'cover_art');
+                        const fileName = coverRel ? coverRel.attributes.fileName : '';
+                        const coverUrl = fileName 
+                            ? `https://uploads.mangadex.org/covers/${item.id}/${fileName}.256.jpg`
+                            : 'https://via.placeholder.com/150x220?text=Sin+Portada';
+
+                        const titleEs = attr.title.es || (attr.altTitles.find(t => t.es) || {}).es || attr.title.en || Object.values(attr.title)[0];
+                        const titleEn = attr.title.en || (attr.altTitles.find(t => t.en) || {}).en || Object.values(attr.title)[0];
+
+                        return {
+                            id: item.id,
+                            title_es: titleEs,
+                            title_en: titleEn,
+                            cover: coverUrl,
+                            synopsis_es: attr.description.es || attr.description.en || "Sinopsis no disponible.",
+                            synopsis_en: attr.description.en || "Synopsis not available.",
+                            status: attr.status || "Desconocido",
+                            mangadex_url: `https://mangadex.org/title/${item.id}`
+                        };
+                    });
+                    renderResults(searchResults);
+                } else {
+                    showNoResults();
+                }
+            } catch (err) {
+                console.error("Error al buscar:", err);
+                showNoResults();
+            }
+        }
+
+        function showNoResults() {
+            document.getElementById('results-container').innerHTML = `
+                <div class="status-box">
+                    <i class="fa-solid fa-ghost"></i>
+                    <p>No se encontraron resultados para esta búsqueda.</p>
+                </div>
+            `;
+        }
+
+        function renderResults(list) {
+            const container = document.getElementById('results-container');
+            if (!list || list.length === 0) return;
+
+            let html = '<div class="manga-grid">';
+            list.forEach(manga => {
+                const title = currentLang === 'es' ? manga.title_es : manga.title_en;
+                const isSaved = myLibrary.some(item => item.id === manga.id);
+                
+                html += `
+                    <div class="manga-card" onclick="openModal('${manga.id}')">
+                        <div class="cover-wrapper">
+                            <img src="${manga.cover}" alt="${title}" loading="lazy">
+                        </div>
+                        <div class="card-content">
+                            <div>
+                                <div class="manga-title">${title}</div>
+                                <div class="manga-status">Estado: ${manga.status}</div>
+                            </div>
+                            <button class="btn-add ${isSaved ? 'saved' : ''}" onclick="event.stopPropagation(); toggleSave('${manga.id}')">
+                                <i class="fa-solid ${isSaved ? 'fa-heart' : 'fa-plus'}"></i>
+                                <span>${isSaved ? 'En mi Lista' : '+ Guardar'}</span>
+                            </button>
+                        </div>
+                    </div>
+                `;
+            });
+            html += '</div>';
+            container.innerHTML = html;
+        }
+
+        function openModal(mangaId) {
+            const manga = searchResults.find(m => m.id === mangaId) || myLibrary.find(m => m.id === mangaId);
+            if (!manga) return;
+
+            selectedManga = manga;
+            fillModalData(manga);
+            document.getElementById('modal-detail').style.display = 'flex';
+        }
+
+        function fillModalData(manga) {
+            const title = currentLang === 'es' ? manga.title_es : manga.title_en;
+            const synopsis = currentLang === 'es' ? manga.synopsis_es : manga.synopsis_en;
+            
+            document.getElementById('modal-img').src = manga.cover;
+            document.getElementById('modal-title').innerText = title;
+            document.getElementById('modal-meta').innerText = `Estado: ${manga.status}`;
+            document.getElementById('modal-synopsis').innerText = synopsis;
+
+            const isSaved = myLibrary.some(item => item.id === manga.id);
+            const btn = document.getElementById('modal-save-btn');
+            btn.className = `btn-add ${isSaved ? 'saved' : ''}`;
+            document.getElementById('modal-save-lbl').innerText = isSaved ? 'En mi Lista ❤️' : '+ Guardar en Mi Lista';
+
+            const searchTitle = encodeURIComponent(title);
+            document.getElementById('modal-links').innerHTML = `
+                <a href="${manga.mangadex_url}" target="_blank" class="read-btn">
+                    <span><i class="fa-solid fa-book-reader" style="color:#FF4757"></i> Leer en MangaDex (Oficial Gratis)</span>
+                    <i class="fa-solid fa-arrow-up-right-from-square"></i>
+                </a>
+                <a href="https://www.google.com/search?q=leer+manga+${searchTitle}+online+gratis+español" target="_blank" class="read-btn">
+                    <span><i class="fa-solid fa-magnifying-glass" style="color:#2ED573"></i> Buscar capítulos en español (Google)</span>
+                    <i class="fa-solid fa-arrow-up-right-from-square"></i>
+                </a>
+            `;
+        }
+
+        function closeModal(e) { if (e.target.id === 'modal-detail') closeModalDirect(); }
+        function closeModalDirect() { document.getElementById('modal-detail').style.display = 'none'; selectedManga = null; }
+
+        function toggleSave(mangaId) {
+            const index = myLibrary.findIndex(m => m.id === mangaId);
+            if (index >= 0) {
+                myLibrary.splice(index, 1);
+            } else {
+                const manga = searchResults.find(m => m.id === mangaId);
+                if (manga) myLibrary.push(manga);
+            }
+            saveLibraryState();
+        }
+
+        function toggleSaveCurrent() {
+            if (selectedManga) {
+                toggleSave(selectedManga.id);
+                fillModalData(selectedManga);
+            }
+        }
+
+        function saveLibraryState() {
+            localStorage.setItem('manga_fio_library', JSON.stringify(myLibrary));
+            updateLibraryCount();
+            renderResults(searchResults);
+            if (currentTab === 'library') renderLibrary();
+        }
+
+        function updateLibraryCount() { document.getElementById('library-count').innerText = myLibrary.length; }
+
+        function renderLibrary() {
+            const container = document.getElementById('library-container');
+            if (myLibrary.length === 0) {
+                container.innerHTML = `
+                    <div class="status-box">
+                        <i class="fa-regular fa-bookmark"></i>
+                        <p>Tu biblioteca está vacía. ¡Explora y guarda tus mangas favoritos!</p>
+                    </div>
+                `;
+                return;
+            }
+
+            let html = '<div class="manga-grid">';
+            myLibrary.forEach(manga => {
+                const title = currentLang === 'es' ? manga.title_es : manga.title_en;
+                html += `
+                    <div class="manga-card" onclick="openModal('${manga.id}')">
+                        <div class="cover-wrapper">
+                            <img src="${manga.cover}" alt="${title}">
+                        </div>
+                        <div class="card-content">
+                            <div class="manga-title">${title}</div>
+                            <button class="btn-add saved" onclick="event.stopPropagation(); toggleSave('${manga.id}')">
+                                <i class="fa-solid fa-trash"></i>
+                                <span>Quitar</span>
+                            </button>
+                        </div>
+                    </div>
+                `;
+            });
+            html += '</div>';
+            container.innerHTML = html;
+        }
+    </script>
+</body>
+</html>
